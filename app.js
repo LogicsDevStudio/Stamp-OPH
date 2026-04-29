@@ -241,8 +241,16 @@ async function processScannedData(scannedNationalId) {
 }
 
 // ==========================================
-// 6. เมนูผู้ดูแลระบบ (Admin)
+// 6. เมนูผู้ดูแลระบบ (Admin) - อัปเดตเพิ่มเมนูผู้เข้าร่วม
 // ==========================================
+
+// -- ใหม่! เมนูดูรายชื่อผู้เข้าร่วมทั้งหมด --
+document.getElementById('btnManageUsers')?.addEventListener('click', async () => {
+    showSection('loading');
+    const snap = await getDocs(collection(db, "users"));
+    renderTable("รายชื่อผู้เข้าร่วมทั้งหมด", ["ชื่อ-นามสกุล", "เลขบัตรประชาชน", "แต้มสะสม", "จัดการ"], snap, "users");
+});
+
 document.getElementById('btnManageStations')?.addEventListener('click', async () => {
     showSection('loading');
     const snap = await getDocs(collection(db, "stations"));
@@ -262,7 +270,7 @@ document.getElementById('btnAdminLogs')?.addEventListener('click', async () => {
 });
 
 // ==========================================
-// 7. ฟังก์ชันสร้างตารางอเนกประสงค์
+// 7. ฟังก์ชันสร้างตารางอเนกประสงค์ (อัปเดตเพื่อรองรับรายชื่อผู้ใช้)
 // ==========================================
 function renderTable(title, headers, snapshot, type) {
     document.getElementById('dataListTitle').innerText = title;
@@ -273,13 +281,30 @@ function renderTable(title, headers, snapshot, type) {
     document.getElementById('dataHead').innerHTML = thead;
 
     let tbody = "";
-    snapshot.forEach(doc => {
-        const d = doc.data();
+    snapshot.forEach(docSnap => {
+        const d = docSnap.data();
+        const id = docSnap.id; // lineUid
         tbody += "<tr>";
+        
         if(type === "stations") tbody += `<td>${d.stationId}</td><td>${d.stationName}</td>`;
         if(type === "staffs") tbody += `<td>${d.staffId}</td><td>${d.staffCode}</td><td>${d.stationId}</td>`;
         if(type === "personalLogs") tbody += `<td>${d.timestamp}</td><td>${d.stationId}</td><td>${d.staffCode}</td>`;
         if(type === "adminLogs") tbody += `<td>${d.timestamp}</td><td>${d.nationalId}</td><td>${d.staffCode}</td><td>${d.stationId}</td>`;
+        
+        // --- เพิ่มส่วนการแสดงผลรายชื่อผู้เข้าร่วม ---
+        if(type === "users") {
+            tbody += `
+                <td>${d.name}</td>
+                <td>${d.nationalId}</td>
+                <td style="text-align:center;"><b>${d.points}</b></td>
+                <td>
+                    <button class="admin-btn" style="padding:5px 10px; font-size:12px; background-color:#2196F3;" 
+                    onclick="viewSpecificUserLogs('${id}', '${d.name}')">
+                        ดูประวัติ
+                    </button>
+                </td>`;
+        }
+        
         tbody += "</tr>";
     });
     
@@ -289,27 +314,42 @@ function renderTable(title, headers, snapshot, type) {
     
     document.getElementById('dataBody').innerHTML = tbody;
 
+    // ปุ่มเพิ่มข้อมูล (เฉพาะฐานและเจ้าหน้าที่)
     const addBtn = document.getElementById('addDataBtn');
-    addBtn.className = (type === "stations" || type === "staffs") ? "admin-btn" : "hidden"; 
-    
-    addBtn.onclick = async () => {
-        if (type === "stations") {
-            const sid = prompt("กรอก 'รหัสฐาน' ที่ต้องการเพิ่ม (เช่น ST01):");
-            const sname = prompt("กรอก 'ชื่อฐานกิจกรรม':");
-            if(sid && sname) await setDoc(doc(db, "stations", sid), { stationId: sid, stationName: sname });
-        } else if (type === "staffs") {
-            const stId = prompt("กรอก 'รหัสเจ้าหน้าที่' (เช่น M01):");
-            const stCode = prompt("กำหนด 'Staff Code' (รหัสสำหรับสแกนแจกแต้ม):");
-            const stStation = prompt("ประจำอยู่ที่ฐานรหัสอะไร? (เช่น ST01):");
-            if(stId && stCode && stStation) await setDoc(doc(db, "staffs", stId), { staffId: stId, staffCode: stCode, stationId: stStation });
-        }
-        alert("เพิ่มข้อมูลสำเร็จ โปรดเปิดเมนูนี้ใหม่อีกครั้งเพื่อรีเฟรชตาราง");
-        showSection('dashboard');
-    };
+    if(addBtn) {
+        addBtn.className = (type === "stations" || type === "staffs") ? "admin-btn" : "hidden"; 
+        addBtn.onclick = async () => {
+            if (type === "stations") {
+                const sid = prompt("กรอก 'รหัสฐาน' ที่ต้องการเพิ่ม:");
+                const sname = prompt("กรอก 'ชื่อฐานกิจกรรม':");
+                if(sid && sname) await setDoc(doc(db, "stations", sid), { stationId: sid, stationName: sname });
+            } else if (type === "staffs") {
+                const stId = prompt("กรอก 'รหัสเจ้าหน้าที่':");
+                const stCode = prompt("กำหนด 'Staff Code':");
+                const stStation = prompt("ประจำฐานรหัสอะไร?:");
+                if(stId && stCode && stStation) await setDoc(doc(db, "staffs", stId), { staffId: stId, staffCode: stCode, stationId: stStation });
+            }
+            alert("บันทึกสำเร็จ!");
+            showSection('dashboard');
+        };
+    }
 
     document.getElementById('closeDataBtn').onclick = () => showSection('dashboard');
     showSection('dataList');
 }
+
+// ฟังก์ชันดึงประวัติแต้มของ "คนใดคนหนึ่ง" (เรียกใช้จากปุ่มในตาราง)
+window.viewSpecificUserLogs = async function(userId, userName) {
+    showSection('loading');
+    try {
+        const qUser = query(collection(db, "logs"), where("lineUid", "==", userId));
+        const snap = await getDocs(qUser);
+        renderTable(`ประวัติแต้มของ: ${userName}`, ["เวลา", "ฐานที่เข้า", "เจ้าหน้าที่"], snap, "personalLogs");
+    } catch (e) {
+        alert("ไม่สามารถโหลดประวัติได้");
+        showSection('dashboard');
+    }
+};
 
 // ==========================================
 // 8. ฟังก์ชันโหลดสถานะฐานกิจกรรม (แถวละ 3 ฐาน)
