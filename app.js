@@ -17,7 +17,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const LIFF_ID = "https://liff.line.me/2009930524-FAPRpgm8"; 
+const LIFF_ID = "2009930524-FAPRpgm8"; 
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyJX0CpJEaLeMuqhJB4cxl_KODWh2Azk9ZWp_QC0knqu8rUVvp5T2D5DIFAjDEulQqIqQ/exec";
 
 let currentUserProfile = null;
