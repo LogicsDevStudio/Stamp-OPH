@@ -2,15 +2,15 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebas
 import { getFirestore, doc, getDoc, setDoc, collection, getDocs, addDoc, query, where, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
 // ==========================================
-// 1. ตั้งค่าพื้นฐาน (แก้ไขเป็นข้อมูลของคุณ)
+// 1. ตั้งค่าพื้นฐาน
 // ==========================================
 const firebaseConfig = {
-  apiKey: "AIzaSyBL30YDtuYkvGL3RWoIgxKzPryftOUdY0Q",
-  authDomain: "stamp-oph.firebaseapp.com",
-  projectId: "stamp-oph",
-  storageBucket: "stamp-oph.firebasestorage.app",
-  messagingSenderId: "720578565437",
-  appId: "1:720578565437:web:5b1556069ae240c50f2154"
+    apiKey: "AIzaSyBL30YDtuYkvGL3RWoIgxKzPryftOUdY0Q",
+    authDomain: "stamp-oph.firebaseapp.com",
+    projectId: "stamp-oph",
+    storageBucket: "stamp-oph.firebasestorage.app",
+    messagingSenderId: "720578565437",
+    appId: "1:720578565437:web:5b1556069ae240c50f2154"
 };
 
 // Initialize Firebase
@@ -22,9 +22,9 @@ const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyJX0CpJEaLeMuqhJB4
 
 let currentUserProfile = null;
 let currentRole = "user";
-let savedStaffCode = null; // ใช้จำรหัสพนักงาน จะได้ไม่ต้องพิมพ์ใหม่ทุกรอบ
+let savedStaffCode = null; // จำรหัสพนักงาน
 let html5QrcodeScanner = null;
-let tempRegistrationData = null; // เก็บข้อมูลชั่วคราวก่อนกดยืนยัน
+let tempRegistrationData = null;
 
 // ==========================================
 // 2. ฟังก์ชันสลับหน้าจอ
@@ -69,15 +69,21 @@ async function checkUserInFirebase() {
         generateQRCode(userData.nationalId);
         loadUserStationStatus(currentUserProfile.userId);
 
-        // จัดการการแสดงผลเมนูตามสิทธิ์
-        document.getElementById('adminMenuBox').classList.add('hidden');
-        document.getElementById('staffMenuBox').classList.add('hidden');
+        // จัดการซ่อน/แสดงเมนูอย่างปลอดภัย ป้องกัน Error classList
+        const adminBox = document.getElementById('adminMenuBox');
+        const staffBox = document.getElementById('staffMenuBox');
 
-        if (currentRole === "admin") {
-            document.getElementById('adminMenuBox').classList.remove('hidden');
-        } else if (currentRole === "staff") {
-            document.getElementById('staffMenuBox').classList.remove('hidden');
+        if(adminBox) adminBox.classList.add('hidden');
+        if(staffBox) staffBox.classList.add('hidden');
+
+        if (currentRole === "admin" && adminBox) {
+            adminBox.classList.remove('hidden');
+        } else if (currentRole === "staff" && staffBox) {
+            staffBox.classList.remove('hidden');
         }
+
+        // ผูกการทำงานให้ปุ่มสแกน
+        setupScanButtons();
 
         showSection('dashboard');
     } else {
@@ -86,7 +92,7 @@ async function checkUserInFirebase() {
 }
 
 // ==========================================
-// 4. ระบบลงทะเบียน (กรอก -> เช็ค Sheet -> ยืนยัน)
+// 4. ระบบลงทะเบียน
 // ==========================================
 document.getElementById('btnCheckId').addEventListener('click', async () => {
     const id = document.getElementById('nationalIdInput').value;
@@ -98,7 +104,6 @@ document.getElementById('btnCheckId').addEventListener('click', async () => {
         const data = await res.json();
         
         if (data.status === "success") {
-            // เก็บข้อมูลไว้ก่อน ยังไม่บันทึกลง Firebase
             tempRegistrationData = {
                 nationalId: id,
                 name: `${data.firstName} ${data.lastName}`,
@@ -106,7 +111,6 @@ document.getElementById('btnCheckId').addEventListener('click', async () => {
                 role: "user"
             };
             
-            // แสดงหน้ายืนยัน
             document.getElementById('confirmName').innerText = tempRegistrationData.name;
             document.getElementById('confirmId').innerText = tempRegistrationData.nationalId;
             showSection('confirm');
@@ -120,7 +124,6 @@ document.getElementById('btnCheckId').addEventListener('click', async () => {
     }
 });
 
-// กดยืนยันการลงทะเบียน
 document.getElementById('btnConfirmRegister').addEventListener('click', async () => {
     if (!tempRegistrationData) return;
     showSection('loading');
@@ -134,22 +137,20 @@ document.getElementById('btnConfirmRegister').addEventListener('click', async ()
     }
 });
 
-// กดยกเลิกกลับไปหน้ากรอกใหม่
 document.getElementById('btnCancelRegister').addEventListener('click', () => {
     tempRegistrationData = null;
     document.getElementById('nationalIdInput').value = "";
     showSection('register');
 });
 
-// สร้าง QR Code จากเลขบัตร ปชช.
 function generateQRCode(text) {
     const container = document.getElementById("qrCodeContainer");
+    if(!container) return;
     container.innerHTML = ""; 
     new QRCode(container, { text: text, width: 180, height: 180, colorDark : "#000000", colorLight : "#ffffff" });
 }
 
-// ดูประวัติของตัวเอง (Log ของ User)
-document.getElementById('btnViewPersonalLogs').addEventListener('click', async () => {
+document.getElementById('btnViewPersonalLogs')?.addEventListener('click', async () => {
     showSection('loading');
     const qUser = query(collection(db, "logs"), where("lineUid", "==", currentUserProfile.userId));
     const snap = await getDocs(qUser);
@@ -157,15 +158,14 @@ document.getElementById('btnViewPersonalLogs').addEventListener('click', async (
 });
 
 // ==========================================
-// 5. เมนูผู้ดูแลระบบ (Admin)
+// 🚀 5. ระบบสแกนและแจกแต้ม (ความเร็วสูง)
 // ==========================================
 
-// -- สแกนและบันทึกแต้ม --
-document.getElementById('btnScanQR').addEventListener('click', () => {
+function startScanner() {
     showSection('scanner');
     html5QrcodeScanner = new Html5Qrcode("reader");
     html5QrcodeScanner.start(
-        { facingMode: "environment" }, // ใช้กล้องหลัง
+        { facingMode: "environment" },
         { fps: 10, qrbox: 250 },
         async (decodedText) => {
             html5QrcodeScanner.stop();
@@ -173,80 +173,96 @@ document.getElementById('btnScanQR').addEventListener('click', () => {
         },
         (errorMessage) => {}
     );
-});
+}
 
-document.getElementById('closeScannerBtn').addEventListener('click', () => {
+// ผูกปุ่มสแกนของ Admin และ Staff แบบไดนามิก
+function setupScanButtons() {
+    const btnStaff = document.getElementById('btnStaffScanQR');
+    if (btnStaff) btnStaff.onclick = () => startScanner();
+
+    const btnAdmin = document.getElementById('btnScanQR');
+    if (btnAdmin) btnAdmin.onclick = () => startScanner();
+}
+
+document.getElementById('closeScannerBtn')?.addEventListener('click', () => {
     if(html5QrcodeScanner) html5QrcodeScanner.stop();
     showSection('dashboard');
 });
 
 async function processScannedData(scannedNationalId) {
-    // 1. ให้กรอกรหัสเจ้าหน้าที่
-    const staffCode = prompt("📷 สแกน QR สำเร็จ!\n\nกรุณากรอกรหัสเจ้าหน้าที่ (Staff Code) ประจำฐานเพื่อแจกแต้ม:");
-    if (!staffCode) return showSection('dashboard');
+    // 1. ถามรหัสเจ้าหน้าที่แค่ครั้งแรก
+    if (!savedStaffCode) {
+        savedStaffCode = prompt("📷 สแกนสำเร็จ!\n\nกรุณากรอกรหัสเจ้าหน้าที่ (Staff Code) ประจำฐานเพื่อแจกแต้ม:");
+        if (!savedStaffCode) return showSection('dashboard');
+    }
 
     showSection('loading');
     
-    // 2. เช็คว่า Staff Code มีอยู่จริงไหมและประจำฐานไหน
-    const qStaff = query(collection(db, "staffs"), where("staffCode", "==", staffCode));
-    const staffSnap = await getDocs(qStaff);
-    
-    if (staffSnap.empty) {
-        alert("❌ รหัสเจ้าหน้าที่ไม่ถูกต้อง!");
-        return showSection('dashboard');
+    try {
+        // ⚡ ความเร็วสูง: ค้นหา Staff และ User พร้อมกัน
+        const [staffSnap, userSnap] = await Promise.all([
+            getDocs(query(collection(db, "staffs"), where("staffCode", "==", savedStaffCode))),
+            getDocs(query(collection(db, "users"), where("nationalId", "==", scannedNationalId)))
+        ]);
+        
+        if (staffSnap.empty) {
+            alert("❌ รหัสเจ้าหน้าที่ไม่ถูกต้อง!");
+            savedStaffCode = null; // รีเซ็ตให้กรอกใหม่
+            return showSection('dashboard');
+        }
+        if (userSnap.empty) {
+            alert("❌ ไม่พบผู้ใช้งานที่ลงทะเบียนด้วย QR Code นี้");
+            return showSection('dashboard');
+        }
+
+        const staffData = staffSnap.docs[0].data();
+        const userDocId = userSnap.docs[0].id;
+
+        // ⚡ ความเร็วสูง: อัปเดตแต้มและบันทึกประวัติพร้อมกัน
+        await Promise.all([
+            updateDoc(doc(db, "users", userDocId), { points: increment(1) }),
+            addDoc(collection(db, "logs"), {
+                timestamp: new Date().toLocaleString("th-TH"),
+                lineUid: userDocId,
+                nationalId: scannedNationalId,
+                stationId: staffData.stationId,
+                staffCode: savedStaffCode
+            })
+        ]);
+
+        alert(`✅ แจกแต้มสำเร็จ!\n\nฐาน: ${staffData.stationId}`);
+        checkUserInFirebase(); 
+        
+    } catch (error) {
+        console.error("Error saving points:", error);
+        alert("❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่");
+        showSection('dashboard');
     }
-
-    const staffData = staffSnap.docs[0].data();
-
-    // 3. หาข้อมูล User จาก National ID ที่สแกนได้
-    const qUser = query(collection(db, "users"), where("nationalId", "==", scannedNationalId));
-    const userSnap = await getDocs(qUser);
-
-    if (userSnap.empty) {
-        alert("❌ ไม่พบผู้ใช้งานที่ลงทะเบียนด้วย QR Code นี้");
-        return showSection('dashboard');
-    }
-
-    const userDocId = userSnap.docs[0].id;
-
-    // 4. บันทึกแต้ม (+1) และเก็บประวัติลง Logs
-    await updateDoc(doc(db, "users", userDocId), { points: increment(1) });
-    
-    await addDoc(collection(db, "logs"), {
-        timestamp: new Date().toLocaleString("th-TH"),
-        lineUid: userDocId,
-        nationalId: scannedNationalId,
-        stationId: staffData.stationId,
-        staffCode: staffCode
-    });
-
-    alert(`✅ แจกแต้มสำเร็จ!\n\nฐาน: ${staffData.stationId}`);
-    showSection('dashboard');
 }
 
-// -- จัดการฐานกิจกรรม --
-document.getElementById('btnManageStations').addEventListener('click', async () => {
+// ==========================================
+// 6. เมนูผู้ดูแลระบบ (Admin)
+// ==========================================
+document.getElementById('btnManageStations')?.addEventListener('click', async () => {
     showSection('loading');
     const snap = await getDocs(collection(db, "stations"));
     renderTable("จัดการฐานกิจกรรม (เพิ่ม/ลบ)", ["รหัสฐาน", "ชื่อฐาน"], snap, "stations");
 });
 
-// -- จัดการเจ้าหน้าที่ --
-document.getElementById('btnManageStaffs').addEventListener('click', async () => {
+document.getElementById('btnManageStaffs')?.addEventListener('click', async () => {
     showSection('loading');
     const snap = await getDocs(collection(db, "staffs"));
     renderTable("จัดการเจ้าหน้าที่ (กำหนดสิทธิ์)", ["รหัส จนท.", "Staff Code", "ประจำฐาน"], snap, "staffs");
 });
 
-// -- จัดการประวัติการบันทึกแต้ม (Admin Logs) --
-document.getElementById('btnAdminLogs').addEventListener('click', async () => {
+document.getElementById('btnAdminLogs')?.addEventListener('click', async () => {
     showSection('loading');
     const snap = await getDocs(collection(db, "logs"));
     renderTable("ประวัติการแจกแต้มทั้งหมด", ["เวลา", "เลขบัตรผู้รับ", "รหัส จนท.", "ฐาน"], snap, "adminLogs");
 });
 
 // ==========================================
-// 6. ฟังก์ชันสร้างตารางอเนกประสงค์
+// 7. ฟังก์ชันสร้างตารางอเนกประสงค์
 // ==========================================
 function renderTable(title, headers, snapshot, type) {
     document.getElementById('dataListTitle').innerText = title;
@@ -273,7 +289,6 @@ function renderTable(title, headers, snapshot, type) {
     
     document.getElementById('dataBody').innerHTML = tbody;
 
-    // ปุ่มเพิ่มข้อมูล จะแสดงเฉพาะจัดการฐานและเจ้าหน้าที่
     const addBtn = document.getElementById('addDataBtn');
     addBtn.className = (type === "stations" || type === "staffs") ? "admin-btn" : "hidden"; 
     
@@ -297,27 +312,25 @@ function renderTable(title, headers, snapshot, type) {
 }
 
 // ==========================================
-// ฟังก์ชันโหลดสถานะฐานกิจกรรม (แถวละ 3 ฐาน)
+// 8. ฟังก์ชันโหลดสถานะฐานกิจกรรม (แถวละ 3 ฐาน)
 // ==========================================
 async function loadUserStationStatus(userId) {
     const container = document.getElementById('stationStatusContainer');
+    if (!container) return;
+
     container.innerHTML = "<p style='grid-column: span 3; color: gray;'>กำลังตรวจสอบข้อมูลฐาน...</p>";
 
     try {
-        // 1. ดึงข้อมูลฐานกิจกรรมทั้งหมด
         const stationSnap = await getDocs(collection(db, "stations"));
         const stations = [];
         stationSnap.forEach(doc => stations.push(doc.data()));
 
-        // 2. ดึงประวัติว่าผู้ใช้คนนี้ผ่านฐานไหนมาแล้วบ้าง
         const qLogs = query(collection(db, "logs"), where("lineUid", "==", userId));
         const logSnap = await getDocs(qLogs);
         
-        // ใช้ Set เก็บเฉพาะรหัสฐานที่ผ่านแล้ว (ไม่ให้ซ้ำกัน)
         const completedStations = new Set();
         logSnap.forEach(doc => completedStations.add(doc.data().stationId));
 
-        // 3. เริ่มสร้าง UI
         container.innerHTML = "";
         
         if (stations.length === 0) {
@@ -325,20 +338,16 @@ async function loadUserStationStatus(userId) {
             return;
         }
 
-        // เรียงลำดับฐานตามรหัสฐาน (เช่น ST01, ST02)
         stations.sort((a, b) => a.stationId.localeCompare(b.stationId));
 
-        // 4. วนลูปสร้างกล่องตามจำนวนฐาน
         stations.forEach(st => {
             const isCompleted = completedStations.has(st.stationId);
             const div = document.createElement('div');
             
             if (isCompleted) {
-                // ผ่านแล้ว (สีเขียว + ติ๊กถูก)
                 div.className = "station-item station-completed";
                 div.innerHTML = `<span style="font-size: 20px;">✅</span><span>${st.stationName}</span>`;
             } else {
-                // ยังไม่ผ่าน (สีเทา)
                 div.className = "station-item station-pending";
                 div.innerHTML = `<span style="font-size: 20px; filter: grayscale(100%); opacity: 0.5;">🔒</span><span>${st.stationName}</span>`;
             }
@@ -352,5 +361,5 @@ async function loadUserStationStatus(userId) {
     }
 }
 
-// เริ่มการทำงานของระบบ
+// เริ่มการทำงาน
 initLiff();
