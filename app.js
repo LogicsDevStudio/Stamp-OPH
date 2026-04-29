@@ -22,6 +22,7 @@ const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyJX0CpJEaLeMuqhJB4
 
 let currentUserProfile = null;
 let currentRole = "user";
+let savedStaffCode = null; // ใช้จำรหัสพนักงาน จะได้ไม่ต้องพิมพ์ใหม่ทุกรอบ
 let html5QrcodeScanner = null;
 let tempRegistrationData = null; // เก็บข้อมูลชั่วคราวก่อนกดยืนยัน
 
@@ -66,15 +67,18 @@ async function checkUserInFirebase() {
         document.getElementById('userNameDisplay').innerText = `สวัสดีคุณ ${userData.name}`;
         document.getElementById('userPointsDisplay').innerText = userData.points;
         generateQRCode(userData.nationalId);
-
-        // --- เพิ่มบรรทัดนี้ลงไป ---
         loadUserStationStatus(currentUserProfile.userId);
+
+        // จัดการการแสดงผลเมนูตามสิทธิ์
+        document.getElementById('adminMenuBox').classList.add('hidden');
+        document.getElementById('staffMenuBox').classList.add('hidden');
 
         if (currentRole === "admin") {
             document.getElementById('adminMenuBox').classList.remove('hidden');
-        } else {
-            document.getElementById('adminMenuBox').classList.add('hidden');
+        } else if (currentRole === "staff") {
+            document.getElementById('staffMenuBox').classList.remove('hidden');
         }
+
         showSection('dashboard');
     } else {
         showSection('register');
