@@ -13,36 +13,27 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 
     <style>
-        /* ============================================================
-           DESIGN TOKENS
-        ============================================================ */
         :root {
-            --ink:         #0f0f0f;
-            --ink-muted:   #6b6b6b;
-            --ink-faint:   #b0b0b0;
-            --surface:     #ffffff;
-            --ground:      #f5f5f3;
-            --border:      #e4e4e0;
-            --accent:      #06c755;
-            --accent-dk:   #04a344;
-            --accent-bg:   #f0fbf4;
-            --danger:      #e53e3e;
-            --danger-bg:   #fff5f5;
-            --danger-bdr:  #fecaca;
-            --warn-bg:     #fffbeb;
-            --warn-bdr:    #fcd34d;
-            --r-sm:        8px;
-            --r:           14px;
-            --r-lg:        22px;
-            --sh-xs:       0 1px 3px rgba(0,0,0,.06);
-            --sh-sm:       0 2px 10px rgba(0,0,0,.07);
-            --sh:          0 6px 24px rgba(0,0,0,.09);
+            --ink:       #0f0f0f;
+            --ink-muted: #6b6b6b;
+            --ink-faint: #b0b0b0;
+            --surface:   #ffffff;
+            --ground:    #f5f5f3;
+            --border:    #e4e4e0;
+            --accent:    #06c755;      /* LINE green */
+            --accent-dk: #04a344;
+            --accent-bg: #f0fbf4;
+            --danger:    #e53e3e;
+            --warn:      #f6ad55;
+            --radius-sm: 8px;
+            --radius:    14px;
+            --radius-lg: 22px;
+            --shadow-xs: 0 1px 3px rgba(0,0,0,.06);
+            --shadow-sm: 0 2px 10px rgba(0,0,0,.07);
+            --shadow:    0 6px 24px rgba(0,0,0,.09);
         }
 
-        /* ============================================================
-           RESET & BASE
-        ============================================================ */
-        *, *::before, *::after { box-sizing: border-box; }
+        * { box-sizing: border-box; }
 
         html, body {
             font-family: 'Noto Sans Thai', sans-serif;
@@ -51,28 +42,21 @@
             min-height: 100vh;
             margin: 0;
             padding: 0;
-            -webkit-font-smoothing: antialiased;
         }
 
-        /* ============================================================
-           LAYOUT
-        ============================================================ */
+        /* ───── Layout ───── */
         .app-shell {
             max-width: 430px;
             margin: 0 auto;
-            padding-bottom: 48px;
+            padding: 0 0 40px;
             min-height: 100vh;
         }
 
-        .hidden { display: none !important; }
-
-        /* ============================================================
-           TOP BAR
-        ============================================================ */
+        /* ───── Top bar ───── */
         .top-bar {
             position: sticky;
             top: 0;
-            z-index: 200;
+            z-index: 100;
             background: var(--surface);
             border-bottom: 1px solid var(--border);
             padding: 14px 20px;
@@ -80,124 +64,104 @@
             align-items: center;
             gap: 10px;
         }
-        .top-bar__icon {
-            font-size: 16px;
-            color: var(--accent);
-            line-height: 1;
-        }
-        .top-bar__brand {
-            font-size: 12px;
+        .top-bar .brand {
+            font-size: 13px;
             font-weight: 700;
-            letter-spacing: .12em;
+            letter-spacing: .08em;
             text-transform: uppercase;
             color: var(--ink-muted);
         }
-        .top-bar__spacer { flex: 1; }
-        .top-bar__dot {
-            width: 7px;
-            height: 7px;
+        .top-bar .dot {
+            width: 7px; height: 7px;
             border-radius: 50%;
             background: var(--accent);
-            animation: pulse 2.2s ease-in-out infinite;
+            margin-left: auto;
+            animation: pulse 2s infinite;
         }
         @keyframes pulse {
-            0%, 100% { opacity: 1;  transform: scale(1); }
-            50%       { opacity: .4; transform: scale(1.5); }
+            0%,100% { opacity: 1; transform: scale(1); }
+            50%      { opacity: .5; transform: scale(1.4); }
         }
 
-        /* ============================================================
-           SECTION CARD
-        ============================================================ */
+        /* ───── Section cards ───── */
+        .hidden { display: none !important; }
+
         .section {
             margin: 20px 16px 0;
             background: var(--surface);
-            border-radius: var(--r-lg);
+            border-radius: var(--radius-lg);
             border: 1px solid var(--border);
             padding: 28px 22px;
-            box-shadow: var(--sh-sm);
+            box-shadow: var(--shadow-sm);
         }
 
-        /* ============================================================
-           LOADING
-        ============================================================ */
-        .loading-wrap {
+        /* ───── Loading ───── */
+        #loadingSection {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 16px;
-            padding: 72px 0 48px;
+            gap: 14px;
+            padding-top: 60px;
         }
-        .spinner {
-            width: 38px;
-            height: 38px;
+        .spinner-ring {
+            width: 40px; height: 40px;
             border: 3px solid var(--border);
             border-top-color: var(--accent);
             border-radius: 50%;
-            animation: spin .75s linear infinite;
+            animation: spin .8s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         .loading-label {
             font-size: 13px;
             color: var(--ink-muted);
-            letter-spacing: .05em;
+            letter-spacing: .04em;
         }
 
-        /* ============================================================
-           TYPOGRAPHY HELPERS
-        ============================================================ */
-        .sec-title {
+        /* ───── Section headings ───── */
+        .section-title {
             font-size: 17px;
             font-weight: 700;
             color: var(--ink);
-            margin: 0 0 4px;
+            margin-bottom: 4px;
         }
-        .sec-sub {
+        .section-sub {
             font-size: 13px;
             color: var(--ink-muted);
-            margin: 0 0 22px;
+            margin-bottom: 20px;
         }
 
-        /* ============================================================
-           FORM
-        ============================================================ */
+        /* ───── Form elements ───── */
         .field-wrap {
             position: relative;
             margin-bottom: 14px;
         }
-        .field-icon {
+        .field-wrap .field-icon {
             position: absolute;
-            left: 14px;
-            top: 50%;
+            left: 14px; top: 50%;
             transform: translateY(-50%);
             color: var(--ink-faint);
             font-size: 15px;
-            pointer-events: none;
         }
-        .input-custom {
+        .form-control-custom {
             width: 100%;
             padding: 13px 14px 13px 40px;
             border: 1.5px solid var(--border);
-            border-radius: var(--r-sm);
+            border-radius: var(--radius-sm);
             font-size: 15px;
             font-family: 'DM Mono', monospace;
             background: var(--ground);
             color: var(--ink);
             outline: none;
-            transition: border-color .2s, box-shadow .2s, background .2s;
+            transition: border-color .2s, box-shadow .2s;
         }
-        .input-custom::placeholder { color: var(--ink-faint); }
-        .input-custom:focus {
+        .form-control-custom:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(6,199,85,.14);
+            box-shadow: 0 0 0 3px rgba(6,199,85,.12);
             background: var(--surface);
         }
 
-        /* ============================================================
-           BUTTONS
-        ============================================================ */
-
-        /* Primary — filled green */
-        .btn-prim {
+        /* ───── Buttons ───── */
+        .btn-primary-custom {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -207,19 +171,17 @@
             background: var(--accent);
             color: #fff;
             border: none;
-            border-radius: var(--r-sm);
+            border-radius: var(--radius-sm);
             font-size: 15px;
             font-weight: 600;
             font-family: 'Noto Sans Thai', sans-serif;
             cursor: pointer;
-            transition: background .15s, transform .1s, box-shadow .15s;
-            box-shadow: 0 2px 8px rgba(6,199,85,.25);
+            transition: background .18s, transform .1s;
         }
-        .btn-prim:hover  { background: var(--accent-dk); box-shadow: 0 4px 14px rgba(6,199,85,.3); }
-        .btn-prim:active { transform: scale(.97); }
+        .btn-primary-custom:hover   { background: var(--accent-dk); }
+        .btn-primary-custom:active  { transform: scale(.97); }
 
-        /* Secondary — outlined */
-        .btn-sec {
+        .btn-secondary-custom {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -229,18 +191,16 @@
             background: var(--surface);
             color: var(--ink);
             border: 1.5px solid var(--border);
-            border-radius: var(--r-sm);
+            border-radius: var(--radius-sm);
             font-size: 14px;
             font-weight: 500;
             font-family: 'Noto Sans Thai', sans-serif;
             cursor: pointer;
-            transition: border-color .15s, background .15s, transform .1s;
+            transition: border-color .18s, background .18s;
         }
-        .btn-sec:hover  { border-color: var(--ink-muted); background: var(--ground); }
-        .btn-sec:active { transform: scale(.97); }
+        .btn-secondary-custom:hover { border-color: var(--ink-muted); background: var(--ground); }
 
-        /* Danger — outlined red */
-        .btn-danger {
+        .btn-danger-custom {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -249,218 +209,130 @@
             padding: 12px 20px;
             background: var(--surface);
             color: var(--danger);
-            border: 1.5px solid var(--danger-bdr);
-            border-radius: var(--r-sm);
+            border: 1.5px solid #fecaca;
+            border-radius: var(--radius-sm);
             font-size: 14px;
             font-weight: 500;
             font-family: 'Noto Sans Thai', sans-serif;
             cursor: pointer;
-            transition: background .15s, border-color .15s, transform .1s;
+            transition: background .18s, border-color .18s;
         }
-        .btn-danger:hover  { background: var(--danger-bg); border-color: var(--danger); }
-        .btn-danger:active { transform: scale(.97); }
+        .btn-danger-custom:hover { background: #fff5f5; border-color: var(--danger); }
 
-        /* Panel button — icon card style */
-        .panel-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            padding: 16px 8px;
-            background: var(--surface);
-            border: 1.5px solid var(--border);
-            border-radius: var(--r);
-            font-size: 11px;
-            font-weight: 600;
-            font-family: 'Noto Sans Thai', sans-serif;
-            color: var(--ink);
-            cursor: pointer;
-            text-align: center;
-            line-height: 1.35;
-            transition: border-color .15s, background .15s, transform .1s;
-        }
-        .panel-btn:hover  { border-color: var(--ink-muted); background: var(--ground); }
-        .panel-btn:active { transform: scale(.96); }
-        .panel-btn__icon  { font-size: 22px; line-height: 1; }
-
-        /* Dark variant — full-width CTA inside panels */
-        .panel-btn--dark {
-            flex-direction: row;
-            gap: 10px;
-            padding: 16px 20px;
-            background: var(--ink);
-            color: #fff;
-            border-color: var(--ink);
-            font-size: 14px;
-            font-weight: 600;
-            grid-column: span 2;
-            box-shadow: var(--sh-xs);
-        }
-        .panel-btn--dark:hover  { background: #222; border-color: #222; color: #fff; }
-        .panel-btn--dark:active { transform: scale(.97); }
-        .panel-btn--dark .panel-btn__icon { font-size: 18px; }
-
-        /* Table action button */
-        .tbl-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 5px 11px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 600;
-            font-family: 'Noto Sans Thai', sans-serif;
-            color: var(--ink);
-            cursor: pointer;
-            white-space: nowrap;
-            transition: background .12s;
-        }
-        .tbl-btn:hover { background: var(--ground); }
-
-        /* ============================================================
-           CONFIRM CARD
-        ============================================================ */
+        /* ───── Confirm card ───── */
         .confirm-card {
             background: var(--ground);
             border: 1px solid var(--border);
-            border-radius: var(--r-sm);
-            overflow: hidden;
+            border-radius: var(--radius-sm);
+            padding: 16px 18px;
             margin-bottom: 20px;
         }
-        .confirm-row {
+        .confirm-card .row-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 16px;
+            padding: 7px 0;
             border-bottom: 1px solid var(--border);
+            font-size: 14px;
         }
-        .confirm-row:last-child { border-bottom: none; }
-        .confirm-row__label {
-            font-size: 13px;
-            color: var(--ink-muted);
-        }
-        .confirm-row__value {
-            font-size: 13px;
-            font-weight: 600;
-            font-family: 'DM Mono', monospace;
-            color: var(--ink);
-        }
+        .confirm-card .row-item:last-child { border-bottom: none; }
+        .confirm-card .label { color: var(--ink-muted); }
+        .confirm-card .value { font-weight: 600; font-family: 'DM Mono', monospace; font-size: 13px; }
 
-        /* ============================================================
-           DASHBOARD HERO
-        ============================================================ */
-        .hero {
+        /* ───── Dashboard hero ───── */
+        .dashboard-hero {
             margin: 20px 16px 0;
             background: var(--ink);
-            border-radius: var(--r-lg);
-            padding: 28px 24px 26px;
+            border-radius: var(--radius-lg);
+            padding: 28px 24px;
+            color: #fff;
             position: relative;
             overflow: hidden;
         }
-        .hero::before {
+        .dashboard-hero::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle at 85% -15%, rgba(6,199,85,.38) 0%, transparent 58%);
+            background: radial-gradient(circle at 80% -20%, rgba(6,199,85,.35) 0%, transparent 60%);
             pointer-events: none;
         }
-        .hero::after {
-            content: '';
-            position: absolute;
-            bottom: -30px;
-            right: -20px;
-            width: 120px;
-            height: 120px;
-            border: 2px solid rgba(255,255,255,.05);
-            border-radius: 50%;
-        }
-        .hero__greeting {
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: .12em;
+        .hero-greeting {
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: .1em;
             text-transform: uppercase;
-            color: rgba(255,255,255,.45);
-            margin: 0 0 5px;
+            color: rgba(255,255,255,.5);
+            margin-bottom: 4px;
         }
-        .hero__name {
+        .hero-name {
             font-size: 20px;
             font-weight: 700;
             color: #fff;
-            margin: 0 0 26px;
-            position: relative;
+            margin-bottom: 24px;
         }
-        .hero__pts-row {
+        .points-row {
             display: flex;
             align-items: flex-end;
-            gap: 8px;
-            position: relative;
+            gap: 6px;
         }
-        .hero__pts-number {
-            font-size: 58px;
+        .points-number {
+            font-size: 56px;
             font-weight: 700;
             line-height: 1;
             color: var(--accent);
             font-family: 'DM Mono', monospace;
         }
-        .hero__pts-label {
+        .points-label {
             font-size: 13px;
-            color: rgba(255,255,255,.5);
-            font-weight: 500;
+            color: rgba(255,255,255,.55);
             padding-bottom: 8px;
+            font-weight: 500;
         }
 
-        /* ============================================================
-           QR CARD
-        ============================================================ */
-        .qr-card {
-            margin: 16px 16px 0;
+        /* ───── QR wrapper ───── */
+        .qr-wrapper {
+            margin: 20px 16px 0;
             background: var(--surface);
+            border-radius: var(--radius-lg);
             border: 1px solid var(--border);
-            border-radius: var(--r-lg);
-            padding: 24px 20px 20px;
+            padding: 24px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 14px;
-            box-shadow: var(--sh-sm);
+            gap: 12px;
+            box-shadow: var(--shadow-sm);
         }
-        .qr-card__label {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: .1em;
+        .qr-label {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: .08em;
             text-transform: uppercase;
             color: var(--ink-muted);
         }
-        .qr-card__frame {
+        #qrCodeContainer {
             padding: 12px;
-            background: #fff;
+            background: var(--surface);
+            border-radius: var(--radius-sm);
             border: 1px solid var(--border);
-            border-radius: var(--r-sm);
-            line-height: 0;
         }
-        .qr-card__hint {
+        .qr-hint {
             font-size: 11px;
             color: var(--ink-faint);
             text-align: center;
-            margin: 0;
         }
 
-        /* ============================================================
-           STATIONS SECTION
-        ============================================================ */
+        /* ───── Station grid ───── */
         .stations-wrap {
             margin: 20px 16px 0;
         }
         .stations-heading {
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 700;
-            letter-spacing: .09em;
+            letter-spacing: .08em;
             text-transform: uppercase;
             color: var(--ink-muted);
             margin-bottom: 12px;
+            padding-left: 2px;
         }
         .station-grid {
             display: grid;
@@ -472,318 +344,301 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 7px;
+            gap: 6px;
             padding: 14px 6px;
-            border-radius: var(--r-sm);
+            border-radius: var(--radius-sm);
             font-size: 11px;
             font-weight: 600;
             line-height: 1.3;
             text-align: center;
-            transition: transform .12s;
+            transition: transform .15s;
         }
-        .station-item__icon { font-size: 20px; line-height: 1; }
-        .station-item--pending {
-            background: var(--ground);
-            border: 1px solid var(--border);
-            color: var(--ink-faint);
-        }
-        .station-item--done {
-            background: var(--accent-bg);
-            border: 1px solid rgba(6,199,85,.3);
-            color: var(--accent-dk);
-        }
+        .station-item:active { transform: scale(.96); }
+        .station-item .icon { font-size: 20px; line-height: 1; }
+        .station-pending   { background: var(--ground); border: 1px solid var(--border); color: var(--ink-faint); }
+        .station-completed { background: var(--accent-bg); border: 1px solid rgba(6,199,85,.3); color: var(--accent-dk); }
 
-        /* ============================================================
-           ACTION ROW
-        ============================================================ */
-        .actions-row { margin: 14px 16px 0; }
-
-        /* ============================================================
-           PANELS  (Admin / Staff)
-        ============================================================ */
-        .panel {
+        /* ───── Action buttons section ───── */
+        .actions-wrap {
             margin: 16px 16px 0;
-            border-radius: var(--r-lg);
-            border: 1.5px dashed var(--border);
-            padding: 20px 18px;
         }
-        .panel--admin {
-            border-color: var(--warn-bdr);
-            background: var(--warn-bg);
+
+        /* ───── Admin / Staff panels ───── */
+        .panel-wrap {
+            margin: 16px 16px 0;
+            border-radius: var(--radius-lg);
+            border: 1.5px dashed;
+            padding: 20px;
         }
-        .panel--staff {
-            border-color: rgba(6,199,85,.35);
-            background: var(--accent-bg);
-        }
-        .panel__title {
-            font-size: 11px;
+        .panel-wrap.admin { border-color: #fcd34d; background: #fffbeb; }
+        .panel-wrap.staff { border-color: rgba(6,199,85,.4); background: var(--accent-bg); }
+        .panel-title {
+            font-size: 12px;
             font-weight: 700;
-            letter-spacing: .09em;
+            letter-spacing: .08em;
             text-transform: uppercase;
             color: var(--ink-muted);
             margin-bottom: 14px;
         }
-        .panel__grid {
+        .panel-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 9px;
+            gap: 8px;
         }
-        .panel__grid--single {
-            display: grid;
-            grid-template-columns: 1fr;
+        .panel-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            padding: 14px 8px;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--ink);
+            cursor: pointer;
+            font-family: 'Noto Sans Thai', sans-serif;
+            transition: background .15s, border-color .15s;
+            text-align: center;
         }
+        .panel-btn .p-icon { font-size: 20px; }
+        .panel-btn:hover { background: var(--ground); border-color: var(--ink-muted); }
+        .panel-btn.highlight {
+            background: var(--ink);
+            color: #fff;
+            border-color: var(--ink);
+            grid-column: span 2;
+            padding: 16px;
+        }
+        .panel-btn.highlight:hover { background: #222; }
 
-        /* Span-2 helper for grid children */
-        .col-span-2 { grid-column: span 2; }
-
-        /* ============================================================
-           SCANNER
-        ============================================================ */
-        .scanner-wrap { margin-top: 16px; }
+        /* ───── Scanner ───── */
+        #scannerSection .section-title { margin-bottom: 16px; }
         #reader {
             width: 100% !important;
-            border-radius: var(--r-sm);
+            border-radius: var(--radius-sm);
             overflow: hidden;
             border: 1px solid var(--border);
         }
-        .scanner-actions { margin-top: 16px; }
 
-        /* ============================================================
-           DATA LIST / TABLE
-        ============================================================ */
-        .table-scroll { overflow-x: auto; }
+        /* ───── Data list / table ───── */
+        #dataListSection .section-title { margin-bottom: 16px; }
+        .table-wrap { overflow-x: auto; }
         .data-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 12px;
         }
-        .data-table thead tr { border-bottom: 2px solid var(--border); }
         .data-table th {
             background: var(--ground);
             color: var(--ink-muted);
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: .07em;
+            font-weight: 600;
+            font-size: 11px;
+            letter-spacing: .05em;
             text-transform: uppercase;
-            padding: 10px;
+            padding: 10px 10px;
             text-align: left;
+            border-bottom: 2px solid var(--border);
             white-space: nowrap;
         }
         .data-table td {
-            padding: 10px;
+            padding: 10px 10px;
             border-bottom: 1px solid var(--border);
             color: var(--ink);
             vertical-align: middle;
         }
-        .data-table tbody tr:last-child td { border-bottom: none; }
-        .data-table tbody tr:hover td { background: var(--ground); }
-
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background: var(--ground); }
         .badge-pts {
             display: inline-block;
             background: var(--accent-bg);
             color: var(--accent-dk);
             font-weight: 700;
-            font-family: 'DM Mono', monospace;
-            font-size: 12px;
             border-radius: 20px;
             padding: 2px 10px;
+            font-size: 12px;
+            font-family: 'DM Mono', monospace;
         }
-        .data-list-footer {
-            margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 9px;
+        .tbl-action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--ink);
+            cursor: pointer;
+            font-family: 'Noto Sans Thai', sans-serif;
+            white-space: nowrap;
         }
+        .tbl-action-btn:hover { background: var(--ground); }
 
-        /* ============================================================
-           DIVIDER
-        ============================================================ */
-        .divider {
-            height: 1px;
-            background: var(--border);
-            margin: 20px 0;
-            border: none;
-        }
+        /* ───── Divider ───── */
+        .divider { height: 1px; background: var(--border); margin: 20px 0; }
 
+        /* ───── Utilities ───── */
+        .mt-10 { margin-top: 10px; }
+        .mt-14 { margin-top: 14px; }
+        .text-muted-sm { font-size: 12px; color: var(--ink-muted); }
     </style>
 </head>
 <body>
 
 <div class="app-shell">
 
-    <!-- ── Top bar ──────────────────────────────────────────────── -->
+    <!-- Top bar -->
     <div class="top-bar">
-        <i class="bi bi-patch-check-fill top-bar__icon"></i>
-        <span class="top-bar__brand">Stamp</span>
-        <span class="top-bar__spacer"></span>
-        <div class="top-bar__dot"></div>
+        <i class="bi bi-patch-check-fill" style="color:var(--accent); font-size:16px;"></i>
+        <span class="brand">STAMP</span>
+        <div class="dot"></div>
     </div>
 
-    <!-- ── Loading ──────────────────────────────────────────────── -->
-    <div id="loadingSection" class="section">
-        <div class="loading-wrap">
-            <div class="spinner"></div>
-            <span class="loading-label">กำลังโหลดข้อมูล...</span>
-        </div>
+    <!-- Loading -->
+    <div id="loadingSection" class="section" style="text-align:center;">
+        <div class="spinner-ring mx-auto"></div>
+        <span class="loading-label">กำลังโหลดข้อมูล...</span>
     </div>
 
-    <!-- ── Register ─────────────────────────────────────────────── -->
+    <!-- Register -->
     <div id="registerSection" class="section hidden">
-        <p class="sec-title">ลงทะเบียน</p>
-        <p class="sec-sub">กรอกเลขบัตรประจำตัวประชาชนเพื่อเริ่มใช้งาน</p>
+        <p class="section-title">ลงทะเบียน</p>
+        <p class="section-sub">กรอกเลขบัตรประจำตัวประชาชนเพื่อเริ่มใช้งาน</p>
         <div class="field-wrap">
             <i class="bi bi-person-vcard field-icon"></i>
-            <input type="text" id="nationalIdInput" maxlength="13"
-                   placeholder="เลขบัตรประชาชน 13 หลัก" class="input-custom">
+            <input type="text" id="nationalIdInput" maxlength="13" placeholder="เลขบัตรประชาชน 13 หลัก" class="form-control-custom">
         </div>
-        <button id="btnCheckId" class="btn-prim">
-            <i class="bi bi-search"></i>
-            ตรวจสอบข้อมูล
+        <button id="btnCheckId" class="btn-primary-custom">
+            <i class="bi bi-search"></i> ตรวจสอบข้อมูล
         </button>
     </div>
 
-    <!-- ── Confirm ──────────────────────────────────────────────── -->
+    <!-- Confirm -->
     <div id="confirmSection" class="section hidden">
-        <p class="sec-title">ยืนยันข้อมูล</p>
-        <p class="sec-sub">โปรดตรวจสอบข้อมูลก่อนยืนยัน</p>
+        <p class="section-title">ยืนยันข้อมูล</p>
+        <p class="section-sub">โปรดตรวจสอบข้อมูลก่อนยืนยัน</p>
         <div class="confirm-card">
-            <div class="confirm-row">
-                <span class="confirm-row__label">ชื่อ-สกุล</span>
-                <span class="confirm-row__value" id="confirmName"></span>
+            <div class="row-item">
+                <span class="label">ชื่อ-สกุล</span>
+                <span class="value" id="confirmName"></span>
             </div>
-            <div class="confirm-row">
-                <span class="confirm-row__label">เลขบัตรฯ</span>
-                <span class="confirm-row__value" id="confirmId"></span>
+            <div class="row-item">
+                <span class="label">เลขบัตรฯ</span>
+                <span class="value" id="confirmId"></span>
             </div>
         </div>
         <div class="d-flex flex-column gap-2">
-            <button id="btnConfirmRegister" class="btn-prim">
-                <i class="bi bi-check-lg"></i>
-                ยืนยันข้อมูล
+            <button id="btnConfirmRegister" class="btn-primary-custom">
+                <i class="bi bi-check-lg"></i> ยืนยันข้อมูล
             </button>
-            <button id="btnCancelRegister" class="btn-danger">
-                <i class="bi bi-x-lg"></i>
-                ยกเลิก
+            <button id="btnCancelRegister" class="btn-danger-custom">
+                <i class="bi bi-x-lg"></i> ยกเลิก
             </button>
         </div>
     </div>
 
-    <!-- ── Dashboard ────────────────────────────────────────────── -->
+    <!-- Dashboard -->
     <div id="dashboardSection" class="hidden">
 
         <!-- Hero card -->
-        <div class="hero">
-            <p class="hero__greeting">ยินดีต้อนรับ</p>
-            <p class="hero__name" id="userNameDisplay">—</p>
-            <div class="hero__pts-row">
-                <span class="hero__pts-number" id="userPointsDisplay">0</span>
-                <span class="hero__pts-label">แต้มสะสม</span>
+        <div class="dashboard-hero">
+            <p class="hero-greeting">ยินดีต้อนรับ</p>
+            <p class="hero-name" id="userNameDisplay">—</p>
+            <div class="points-row">
+                <span class="points-number" id="userPointsDisplay">0</span>
+                <span class="points-label">แต้มสะสม</span>
             </div>
         </div>
 
         <!-- QR Code -->
-        <div class="qr-card">
-            <span class="qr-card__label">
-                <i class="bi bi-qr-code me-1"></i>QR ของฉัน
-            </span>
-            <div class="qr-card__frame" id="qrCodeContainer"></div>
-            <p class="qr-card__hint">แสดง QR Code นี้ให้เจ้าหน้าที่สแกน</p>
+        <div class="qr-wrapper">
+            <span class="qr-label"><i class="bi bi-qr-code me-1"></i> QR ของฉัน</span>
+            <div id="qrCodeContainer"></div>
+            <p class="qr-hint">แสดง QR Code นี้ให้เจ้าหน้าที่สแกน</p>
         </div>
 
         <!-- Station status -->
         <div class="stations-wrap">
-            <p class="stations-heading">
-                <i class="bi bi-flag-fill me-1"></i>สถานะฐานกิจกรรม
-            </p>
+            <p class="stations-heading"><i class="bi bi-flag me-1"></i>สถานะฐานกิจกรรม</p>
             <div id="stationStatusContainer" class="station-grid"></div>
         </div>
 
-        <!-- Personal log -->
-        <div class="actions-row">
-            <button id="btnViewPersonalLogs" class="btn-sec">
-                <i class="bi bi-clock-history"></i>
-                ดูประวัติของฉัน
+        <!-- Personal log button -->
+        <div class="actions-wrap">
+            <button id="btnViewPersonalLogs" class="btn-secondary-custom">
+                <i class="bi bi-clock-history"></i> ดูประวัติของฉัน
             </button>
         </div>
 
         <!-- Admin panel -->
-        <div id="adminMenuBox" class="panel panel--admin hidden">
-            <p class="panel__title">
-                <i class="bi bi-shield-lock me-1"></i>ผู้ดูแลระบบ
-            </p>
-            <div class="panel__grid">
-                <button class="panel-btn panel-btn--dark col-span-2" id="btnScanQR">
-                    <span class="panel-btn__icon"><i class="bi bi-qr-code-scan"></i></span>
+        <div id="adminMenuBox" class="panel-wrap admin hidden">
+            <p class="panel-title"><i class="bi bi-shield-lock me-1"></i>ผู้ดูแลระบบ</p>
+            <div class="panel-grid">
+                <button class="panel-btn highlight" id="btnScanQR">
+                    <span class="p-icon"><i class="bi bi-qr-code-scan"></i></span>
                     สแกนแจกแต้ม (Admin)
                 </button>
                 <button class="panel-btn" id="btnManageUsers">
-                    <span class="panel-btn__icon"><i class="bi bi-people"></i></span>
+                    <span class="p-icon"><i class="bi bi-people"></i></span>
                     รายชื่อผู้เข้าร่วม
                 </button>
                 <button class="panel-btn" id="btnManageStations">
-                    <span class="panel-btn__icon"><i class="bi bi-geo-alt"></i></span>
-                    จัดการฐาน
+                    <span class="p-icon"><i class="bi bi-geo-alt"></i></span>
+                    จัดการฐานกิจกรรม
                 </button>
                 <button class="panel-btn" id="btnManageStaffs">
-                    <span class="panel-btn__icon"><i class="bi bi-person-badge"></i></span>
+                    <span class="p-icon"><i class="bi bi-person-badge"></i></span>
                     จัดการเจ้าหน้าที่
                 </button>
-                <button class="panel-btn" id="btnAdminLogs">
-                    <span class="panel-btn__icon"><i class="bi bi-journal-text"></i></span>
-                    ประวัติแจกแต้มทั้งหมด
+                <button class="panel-btn" id="btnAdminLogs" style="grid-column:span 2;">
+                    <span class="p-icon"><i class="bi bi-journal-text"></i></span>
+                    ประวัติการแจกแต้มทั้งหมด
                 </button>
             </div>
         </div>
 
         <!-- Staff panel -->
-        <div id="staffMenuBox" class="panel panel--staff hidden">
-            <p class="panel__title">
-                <i class="bi bi-person-workspace me-1"></i>เมนูเจ้าหน้าที่
-            </p>
-            <div class="panel__grid--single">
-                <button class="panel-btn panel-btn--dark" id="btnStaffScanQR">
-                    <span class="panel-btn__icon"><i class="bi bi-qr-code-scan"></i></span>
-                    สแกนแจกแต้ม
-                </button>
-            </div>
+        <div id="staffMenuBox" class="panel-wrap staff hidden">
+            <p class="panel-title"><i class="bi bi-person-workspace me-1"></i>เมนูเจ้าหน้าที่</p>
+            <button class="panel-btn highlight" id="btnStaffScanQR">
+                <span class="p-icon"><i class="bi bi-qr-code-scan"></i></span>
+                สแกนแจกแต้ม
+            </button>
         </div>
 
     </div><!-- /dashboardSection -->
 
-    <!-- ── Scanner ──────────────────────────────────────────────── -->
+    <!-- Scanner -->
     <div id="scannerSection" class="section hidden">
-        <p class="sec-title">
-            <i class="bi bi-camera me-2"></i>สแกน QR Code
-        </p>
-        <div class="scanner-wrap">
-            <div id="reader"></div>
-        </div>
-        <div class="scanner-actions">
-            <button id="closeScannerBtn" class="btn-danger">
-                <i class="bi bi-x-circle"></i>
-                ยกเลิกสแกน
+        <p class="section-title"><i class="bi bi-camera me-2"></i>สแกน QR Code</p>
+        <div id="reader"></div>
+        <div class="mt-14">
+            <button id="closeScannerBtn" class="btn-danger-custom">
+                <i class="bi bi-x-circle"></i> ยกเลิกสแกน
             </button>
         </div>
     </div>
 
-    <!-- ── Data list ─────────────────────────────────────────────── -->
+    <!-- Data list -->
     <div id="dataListSection" class="section hidden">
-        <p class="sec-title" id="dataListTitle">ข้อมูล</p>
-        <div class="table-scroll">
+        <p class="section-title" id="dataListTitle">ข้อมูล</p>
+        <div class="table-wrap">
             <table class="data-table" id="dataTable">
                 <thead id="dataHead"></thead>
                 <tbody id="dataBody"></tbody>
             </table>
         </div>
-        <hr class="divider">
-        <div class="data-list-footer">
-            <button id="addDataBtn" class="btn-sec hidden">
-                <i class="bi bi-plus-lg"></i>
-                เพิ่มข้อมูล
+        <div class="divider"></div>
+        <div class="d-flex flex-column gap-2">
+            <button id="addDataBtn" class="btn-secondary-custom hidden">
+                <i class="bi bi-plus-lg"></i> เพิ่มข้อมูล
             </button>
-            <button id="closeDataBtn" class="btn-sec">
-                <i class="bi bi-arrow-left"></i>
-                กลับหน้าหลัก
+            <button id="closeDataBtn" class="btn-secondary-custom">
+                <i class="bi bi-arrow-left"></i> กลับหน้าหลัก
             </button>
         </div>
     </div>
