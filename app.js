@@ -226,7 +226,8 @@ async function processScannedData(scannedNationalId) {
                 lineUid: userDocId,
                 nationalId: scannedNationalId,
                 stationId: staffData.stationId,
-                staffCode: savedStaffCode
+                staffId: staffData.staffId, // 👈 เพิ่มบรรทัดนี้: บันทึก ID เจ้าหน้าที่
+                staffCode: savedStaffCode   // (เก็บ Code ไว้ดูหลังบ้าน หรือลบบรรทัดนี้ออกก็ได้ครับ)
             })
         ]);
 
@@ -288,8 +289,10 @@ function renderTable(title, headers, snapshot, type) {
         
         if(type === "stations") tbody += `<td>${d.stationId}</td><td>${d.stationName}</td>`;
         if(type === "staffs") tbody += `<td>${d.staffId}</td><td>${d.staffCode}</td><td>${d.stationId}</td>`;
-        if(type === "personalLogs") tbody += `<td>${d.timestamp}</td><td>${d.stationId}</td><td>${d.staffCode}</td>`;
-        if(type === "adminLogs") tbody += `<td>${d.timestamp}</td><td>${d.nationalId}</td><td>${d.staffCode}</td><td>${d.stationId}</td>`;
+        
+        // 👈 อัปเดต: เปลี่ยนมาแสดง staffId แทน 
+        if(type === "personalLogs") tbody += `<td>${d.timestamp}</td><td>${d.stationId}</td><td>${d.staffId || d.staffCode}</td>`;
+        if(type === "adminLogs") tbody += `<td>${d.timestamp}</td><td>${d.nationalId}</td><td>${d.staffId || d.staffCode}</td><td>${d.stationId}</td>`;
         
         // --- เพิ่มส่วนการแสดงผลรายชื่อผู้เข้าร่วม ---
         if(type === "users") {
