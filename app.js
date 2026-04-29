@@ -5,19 +5,20 @@ import { getFirestore, doc, getDoc, setDoc, collection, getDocs, addDoc, query, 
 // 1. ตั้งค่าพื้นฐาน (แก้ไขเป็นข้อมูลของคุณ)
 // ==========================================
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "1:123456789:web:abcdef"
+  apiKey: "AIzaSyBL30YDtuYkvGL3RWoIgxKzPryftOUdY0Q",
+  authDomain: "stamp-oph.firebaseapp.com",
+  projectId: "stamp-oph",
+  storageBucket: "stamp-oph.firebasestorage.app",
+  messagingSenderId: "720578565437",
+  appId: "1:720578565437:web:5b1556069ae240c50f2154"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const LIFF_ID = "YOUR_LIFF_ID"; 
-const GAS_API_URL = "YOUR_GAS_WEB_APP_URL";
+const LIFF_ID = "https://liff.line.me/2009930524-FAPRpgm8"; 
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyJX0CpJEaLeMuqhJB4cxl_KODWh2Azk9ZWp_QC0knqu8rUVvp5T2D5DIFAjDEulQqIqQ/exec";
 
 let currentUserProfile = null;
 let currentRole = "user";
