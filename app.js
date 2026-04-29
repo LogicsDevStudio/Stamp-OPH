@@ -22,7 +22,7 @@ const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyJX0CpJEaLeMuqhJB4
 
 let currentUserProfile = null;
 let currentRole = "user";
-let savedStaffCode = null; // จำรหัสพนักงาน
+let savedStaffCode = null;
 let html5QrcodeScanner = null;
 let tempRegistrationData = null;
 
@@ -64,12 +64,11 @@ async function checkUserInFirebase() {
         const userData = userSnap.data();
         currentRole = userData.role || "user";
         
-        document.getElementById('userNameDisplay').innerText = `สวัสดีคุณ ${userData.name}`;
+        document.getElementById('userNameDisplay').innerText = userData.name;
         document.getElementById('userPointsDisplay').innerText = userData.points;
         generateQRCode(userData.nationalId);
         loadUserStationStatus(currentUserProfile.userId);
 
-        // จัดการซ่อน/แสดงเมนูอย่างปลอดภัย ป้องกัน Error classList
         const adminBox = document.getElementById('adminMenuBox');
         const staffBox = document.getElementById('staffMenuBox');
 
@@ -82,9 +81,7 @@ async function checkUserInFirebase() {
             staffBox.classList.remove('hidden');
         }
 
-        // ผูกการทำงานให้ปุ่มสแกน
         setupScanButtons();
-
         showSection('dashboard');
     } else {
         showSection('register');
@@ -160,7 +157,6 @@ document.getElementById('btnViewPersonalLogs')?.addEventListener('click', async 
 // ==========================================
 // 🚀 5. ระบบสแกนและแจกแต้ม (ความเร็วสูง)
 // ==========================================
-
 function startScanner() {
     showSection('scanner');
     html5QrcodeScanner = new Html5Qrcode("reader");
@@ -175,7 +171,6 @@ function startScanner() {
     );
 }
 
-// ผูกปุ่มสแกนของ Admin และ Staff แบบไดนามิก
 function setupScanButtons() {
     const btnStaff = document.getElementById('btnStaffScanQR');
     if (btnStaff) btnStaff.onclick = () => startScanner();
@@ -190,7 +185,6 @@ document.getElementById('closeScannerBtn')?.addEventListener('click', () => {
 });
 
 async function processScannedData(scannedNationalId) {
-    // 1. ถามรหัสเจ้าหน้าที่แค่ครั้งแรก
     if (!savedStaffCode) {
         savedStaffCode = prompt("📷 สแกนสำเร็จ!\n\nกรุณากรอกรหัสเจ้าหน้าที่ (Staff Code) ประจำฐานเพื่อแจกแต้ม:");
         if (!savedStaffCode) return showSection('dashboard');
@@ -199,7 +193,6 @@ async function processScannedData(scannedNationalId) {
     showSection('loading');
     
     try {
-        // ⚡ ความเร็วสูง: ค้นหา Staff และ User พร้อมกัน
         const [staffSnap, userSnap] = await Promise.all([
             getDocs(query(collection(db, "staffs"), where("staffCode", "==", savedStaffCode))),
             getDocs(query(collection(db, "users"), where("nationalId", "==", scannedNationalId)))
@@ -207,7 +200,7 @@ async function processScannedData(scannedNationalId) {
         
         if (staffSnap.empty) {
             alert("❌ รหัสเจ้าหน้าที่ไม่ถูกต้อง!");
-            savedStaffCode = null; // รีเซ็ตให้กรอกใหม่
+            savedStaffCode = null;
             return showSection('dashboard');
         }
         if (userSnap.empty) {
@@ -218,7 +211,6 @@ async function processScannedData(scannedNationalId) {
         const staffData = staffSnap.docs[0].data();
         const userDocId = userSnap.docs[0].id;
 
-        // ⚡ ความเร็วสูง: อัปเดตแต้มและบันทึกประวัติพร้อมกัน
         await Promise.all([
             updateDoc(doc(db, "users", userDocId), { points: increment(1) }),
             addDoc(collection(db, "logs"), {
@@ -226,8 +218,8 @@ async function processScannedData(scannedNationalId) {
                 lineUid: userDocId,
                 nationalId: scannedNationalId,
                 stationId: staffData.stationId,
-                staffId: staffData.staffId, // 👈 เพิ่มบรรทัดนี้: บันทึก ID เจ้าหน้าที่
-                staffCode: savedStaffCode   // (เก็บ Code ไว้ดูหลังบ้าน หรือลบบรรทัดนี้ออกก็ได้ครับ)
+                staffId: staffData.staffId,
+                staffCode: savedStaffCode
             })
         ]);
 
@@ -242,10 +234,8 @@ async function processScannedData(scannedNationalId) {
 }
 
 // ==========================================
-// 6. เมนูผู้ดูแลระบบ (Admin) - อัปเดตเพิ่มเมนูผู้เข้าร่วม
+// 6. เมนูผู้ดูแลระบบ (Admin)
 // ==========================================
-
-// -- ใหม่! เมนูดูรายชื่อผู้เข้าร่วมทั้งหมด --
 document.getElementById('btnManageUsers')?.addEventListener('click', async () => {
     showSection('loading');
     const snap = await getDocs(collection(db, "users"));
@@ -255,13 +245,13 @@ document.getElementById('btnManageUsers')?.addEventListener('click', async () =>
 document.getElementById('btnManageStations')?.addEventListener('click', async () => {
     showSection('loading');
     const snap = await getDocs(collection(db, "stations"));
-    renderTable("จัดการฐานกิจกรรม (เพิ่ม/ลบ)", ["รหัสฐาน", "ชื่อฐาน"], snap, "stations");
+    renderTable("จัดการฐานกิจกรรม", ["รหัสฐาน", "ชื่อฐาน"], snap, "stations");
 });
 
 document.getElementById('btnManageStaffs')?.addEventListener('click', async () => {
     showSection('loading');
     const snap = await getDocs(collection(db, "staffs"));
-    renderTable("จัดการเจ้าหน้าที่ (กำหนดสิทธิ์)", ["รหัส จนท.", "Staff Code", "ประจำฐาน"], snap, "staffs");
+    renderTable("จัดการเจ้าหน้าที่", ["รหัส จนท.", "Staff Code", "ประจำฐาน"], snap, "staffs");
 });
 
 document.getElementById('btnAdminLogs')?.addEventListener('click', async () => {
@@ -271,39 +261,60 @@ document.getElementById('btnAdminLogs')?.addEventListener('click', async () => {
 });
 
 // ==========================================
-// 7. ฟังก์ชันสร้างตารางอเนกประสงค์ (อัปเดตเพื่อรองรับรายชื่อผู้ใช้)
+// 7. ฟังก์ชันสร้างตารางอเนกประสงค์
 // ==========================================
 function renderTable(title, headers, snapshot, type) {
     document.getElementById('dataListTitle').innerText = title;
     
+    // สร้าง thead
     let thead = "<tr>";
     headers.forEach(h => thead += `<th>${h}</th>`);
     thead += "</tr>";
     document.getElementById('dataHead').innerHTML = thead;
 
+    // สร้าง tbody
     let tbody = "";
     snapshot.forEach(docSnap => {
         const d = docSnap.data();
-        const id = docSnap.id; // lineUid
+        const id = docSnap.id;
         tbody += "<tr>";
         
-        if(type === "stations") tbody += `<td>${d.stationId}</td><td>${d.stationName}</td>`;
-        if(type === "staffs") tbody += `<td>${d.staffId}</td><td>${d.staffCode}</td><td>${d.stationId}</td>`;
-        
-        // 👈 อัปเดต: เปลี่ยนมาแสดง staffId แทน 
-        if(type === "personalLogs") tbody += `<td>${d.timestamp}</td><td>${d.stationId}</td><td>${d.staffId || d.staffCode}</td>`;
-        if(type === "adminLogs") tbody += `<td>${d.timestamp}</td><td>${d.nationalId}</td><td>${d.staffId || d.staffCode}</td><td>${d.stationId}</td>`;
-        
-        // --- เพิ่มส่วนการแสดงผลรายชื่อผู้เข้าร่วม ---
-        if(type === "users") {
+        if (type === "stations") {
             tbody += `
-                <td>${d.name}</td>
-                <td>${d.nationalId}</td>
-                <td style="text-align:center;"><b>${d.points}</b></td>
+                <td><span style="font-family:'DM Mono',monospace; font-size:12px;">${d.stationId}</span></td>
+                <td>${d.stationName}</td>`;
+        }
+
+        if (type === "staffs") {
+            tbody += `
+                <td><span style="font-family:'DM Mono',monospace; font-size:12px;">${d.staffId}</span></td>
+                <td><span style="font-family:'DM Mono',monospace; font-size:12px; background:var(--ground); padding:2px 8px; border-radius:4px; border:1px solid var(--border);">${d.staffCode}</span></td>
+                <td>${d.stationId}</td>`;
+        }
+
+        if (type === "personalLogs") {
+            tbody += `
+                <td style="color:var(--ink-muted); font-size:11px;">${d.timestamp}</td>
+                <td>${d.stationId}</td>
+                <td><span style="font-family:'DM Mono',monospace; font-size:11px;">${d.staffId || d.staffCode}</span></td>`;
+        }
+
+        if (type === "adminLogs") {
+            tbody += `
+                <td style="color:var(--ink-muted); font-size:11px;">${d.timestamp}</td>
+                <td><span style="font-family:'DM Mono',monospace; font-size:11px;">${d.nationalId}</span></td>
+                <td><span style="font-family:'DM Mono',monospace; font-size:11px;">${d.staffId || d.staffCode}</span></td>
+                <td>${d.stationId}</td>`;
+        }
+        
+        if (type === "users") {
+            tbody += `
+                <td style="font-weight:500;">${d.name}</td>
+                <td><span style="font-family:'DM Mono',monospace; font-size:11px;">${d.nationalId}</span></td>
+                <td><span class="badge-pts">${d.points}</span></td>
                 <td>
-                    <button class="admin-btn" style="padding:5px 10px; font-size:12px; background-color:#2196F3;" 
-                    onclick="viewSpecificUserLogs('${id}', '${d.name}')">
-                        ดูประวัติ
+                    <button class="tbl-action-btn" onclick="viewSpecificUserLogs('${id}', '${d.name}')">
+                        <i class="bi bi-clock-history"></i> ประวัติ
                     </button>
                 </td>`;
         }
@@ -311,26 +322,32 @@ function renderTable(title, headers, snapshot, type) {
         tbody += "</tr>";
     });
     
-    if(snapshot.empty) {
-        tbody = `<tr><td colspan="${headers.length}">ไม่มีข้อมูล</td></tr>`;
+    if (snapshot.empty) {
+        tbody = `<tr><td colspan="${headers.length}" style="text-align:center; color:var(--ink-muted); padding:24px;">ไม่มีข้อมูล</td></tr>`;
     }
     
     document.getElementById('dataBody').innerHTML = tbody;
 
     // ปุ่มเพิ่มข้อมูล (เฉพาะฐานและเจ้าหน้าที่)
     const addBtn = document.getElementById('addDataBtn');
-    if(addBtn) {
-        addBtn.className = (type === "stations" || type === "staffs") ? "admin-btn" : "hidden"; 
+    if (addBtn) {
+        if (type === "stations" || type === "staffs") {
+            addBtn.classList.remove('hidden');
+            addBtn.className = 'btn-secondary-custom';
+        } else {
+            addBtn.classList.add('hidden');
+        }
+
         addBtn.onclick = async () => {
             if (type === "stations") {
                 const sid = prompt("กรอก 'รหัสฐาน' ที่ต้องการเพิ่ม:");
                 const sname = prompt("กรอก 'ชื่อฐานกิจกรรม':");
-                if(sid && sname) await setDoc(doc(db, "stations", sid), { stationId: sid, stationName: sname });
+                if (sid && sname) await setDoc(doc(db, "stations", sid), { stationId: sid, stationName: sname });
             } else if (type === "staffs") {
                 const stId = prompt("กรอก 'รหัสเจ้าหน้าที่':");
                 const stCode = prompt("กำหนด 'Staff Code':");
                 const stStation = prompt("ประจำฐานรหัสอะไร?:");
-                if(stId && stCode && stStation) await setDoc(doc(db, "staffs", stId), { staffId: stId, staffCode: stCode, stationId: stStation });
+                if (stId && stCode && stStation) await setDoc(doc(db, "staffs", stId), { staffId: stId, staffCode: stCode, stationId: stStation });
             }
             alert("บันทึกสำเร็จ!");
             showSection('dashboard');
@@ -341,7 +358,7 @@ function renderTable(title, headers, snapshot, type) {
     showSection('dataList');
 }
 
-// ฟังก์ชันดึงประวัติแต้มของ "คนใดคนหนึ่ง" (เรียกใช้จากปุ่มในตาราง)
+// ฟังก์ชันดึงประวัติแต้มของ "คนใดคนหนึ่ง"
 window.viewSpecificUserLogs = async function(userId, userName) {
     showSection('loading');
     try {
@@ -355,13 +372,16 @@ window.viewSpecificUserLogs = async function(userId, userName) {
 };
 
 // ==========================================
-// 8. ฟังก์ชันโหลดสถานะฐานกิจกรรม (แถวละ 3 ฐาน)
+// 8. ฟังก์ชันโหลดสถานะฐานกิจกรรม
 // ==========================================
 async function loadUserStationStatus(userId) {
     const container = document.getElementById('stationStatusContainer');
     if (!container) return;
 
-    container.innerHTML = "<p style='grid-column: span 3; color: gray;'>กำลังตรวจสอบข้อมูลฐาน...</p>";
+    container.innerHTML = `
+        <div style="grid-column:span 3; text-align:center; padding:12px 0;">
+            <div style="width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto;"></div>
+        </div>`;
 
     try {
         const stationSnap = await getDocs(collection(db, "stations"));
@@ -377,7 +397,7 @@ async function loadUserStationStatus(userId) {
         container.innerHTML = "";
         
         if (stations.length === 0) {
-            container.innerHTML = "<p style='grid-column: span 3; color: gray;'>ยังไม่มีข้อมูลฐานกิจกรรมในระบบ</p>";
+            container.innerHTML = `<p style="grid-column:span 3; color:var(--ink-faint); font-size:13px; text-align:center; padding:16px 0;">ยังไม่มีข้อมูลฐานกิจกรรมในระบบ</p>`;
             return;
         }
 
@@ -389,10 +409,14 @@ async function loadUserStationStatus(userId) {
             
             if (isCompleted) {
                 div.className = "station-item station-completed";
-                div.innerHTML = `<span style="font-size: 20px;">✅</span><span>${st.stationName}</span>`;
+                div.innerHTML = `
+                    <span class="icon"><i class="bi bi-check-circle-fill"></i></span>
+                    <span>${st.stationName}</span>`;
             } else {
                 div.className = "station-item station-pending";
-                div.innerHTML = `<span style="font-size: 20px; filter: grayscale(100%); opacity: 0.5;">🔒</span><span>${st.stationName}</span>`;
+                div.innerHTML = `
+                    <span class="icon"><i class="bi bi-lock"></i></span>
+                    <span>${st.stationName}</span>`;
             }
             
             container.appendChild(div);
@@ -400,7 +424,7 @@ async function loadUserStationStatus(userId) {
 
     } catch (error) {
         console.error("Error loading station status:", error);
-        container.innerHTML = "<p style='grid-column: span 3; color: red;'>เกิดข้อผิดพลาดในการโหลดข้อมูลฐาน</p>";
+        container.innerHTML = `<p style="grid-column:span 3; color:var(--danger); font-size:13px; text-align:center;">เกิดข้อผิดพลาดในการโหลดข้อมูลฐาน</p>`;
     }
 }
 
