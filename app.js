@@ -268,7 +268,7 @@ function renderTable(title, headers, snapshot, type) {
     
     // สร้าง thead
     let thead = "<tr>";
-    headers.forEach(h => thead += `<th>${h}</th>`);
+    headers.forEach(h => thead += `<th class="text-secondary fw-semibold">${h}</th>`);
     thead += "</tr>";
     document.getElementById('dataHead').innerHTML = thead;
 
@@ -281,39 +281,39 @@ function renderTable(title, headers, snapshot, type) {
         
         if (type === "stations") {
             tbody += `
-                <td><span style="font-family:'DM Mono',monospace; font-size:12px;">${d.stationId}</span></td>
-                <td>${d.stationName}</td>`;
+                <td><span class="font-mono small bg-light px-2 py-1 border rounded-2 text-secondary">${d.stationId}</span></td>
+                <td class="fw-medium">${d.stationName}</td>`;
         }
 
         if (type === "staffs") {
             tbody += `
-                <td><span style="font-family:'DM Mono',monospace; font-size:12px;">${d.staffId}</span></td>
-                <td><span style="font-family:'DM Mono',monospace; font-size:12px; background:var(--ground); padding:2px 8px; border-radius:4px; border:1px solid var(--border);">${d.staffCode}</span></td>
-                <td>${d.stationId}</td>`;
+                <td><span class="font-mono small">${d.staffId}</span></td>
+                <td><span class="font-mono small bg-light px-2 py-1 border rounded-2 text-dark">${d.staffCode}</span></td>
+                <td class="fw-medium">${d.stationId}</td>`;
         }
 
         if (type === "personalLogs") {
             tbody += `
-                <td style="color:var(--ink-muted); font-size:11px;">${d.timestamp}</td>
-                <td>${d.stationId}</td>
-                <td><span style="font-family:'DM Mono',monospace; font-size:11px;">${d.staffId || d.staffCode}</span></td>`;
+                <td class="text-secondary" style="font-size:11px;">${d.timestamp}</td>
+                <td class="fw-medium text-success">${d.stationId}</td>
+                <td><span class="font-mono small text-secondary">${d.staffId || d.staffCode}</span></td>`;
         }
 
         if (type === "adminLogs") {
             tbody += `
-                <td style="color:var(--ink-muted); font-size:11px;">${d.timestamp}</td>
-                <td><span style="font-family:'DM Mono',monospace; font-size:11px;">${d.nationalId}</span></td>
-                <td><span style="font-family:'DM Mono',monospace; font-size:11px;">${d.staffId || d.staffCode}</span></td>
-                <td>${d.stationId}</td>`;
+                <td class="text-secondary" style="font-size:11px;">${d.timestamp}</td>
+                <td><span class="font-mono small">${d.nationalId}</span></td>
+                <td><span class="font-mono small text-secondary">${d.staffId || d.staffCode}</span></td>
+                <td class="fw-medium text-success">${d.stationId}</td>`;
         }
         
         if (type === "users") {
             tbody += `
-                <td style="font-weight:500;">${d.name}</td>
-                <td><span style="font-family:'DM Mono',monospace; font-size:11px;">${d.nationalId}</span></td>
-                <td><span class="badge-pts">${d.points}</span></td>
+                <td class="fw-medium text-dark">${d.name}</td>
+                <td><span class="font-mono small text-secondary">${d.nationalId}</span></td>
+                <td><span class="badge bg-success rounded-pill px-3 py-2 shadow-sm font-mono fs-6">${d.points}</span></td>
                 <td>
-                    <button class="tbl-action-btn" onclick="viewSpecificUserLogs('${id}', '${d.name}')">
+                    <button class="btn btn-sm btn-light border rounded-3 text-secondary fw-semibold shadow-sm d-flex align-items-center gap-1" onclick="viewSpecificUserLogs('${id}', '${d.name}')">
                         <i class="bi bi-clock-history"></i> ประวัติ
                     </button>
                 </td>`;
@@ -323,7 +323,7 @@ function renderTable(title, headers, snapshot, type) {
     });
     
     if (snapshot.empty) {
-        tbody = `<tr><td colspan="${headers.length}" style="text-align:center; color:var(--ink-muted); padding:24px;">ไม่มีข้อมูล</td></tr>`;
+        tbody = `<tr><td colspan="${headers.length}" class="text-center text-secondary py-4">ไม่มีข้อมูล</td></tr>`;
     }
     
     document.getElementById('dataBody').innerHTML = tbody;
@@ -333,7 +333,8 @@ function renderTable(title, headers, snapshot, type) {
     if (addBtn) {
         if (type === "stations" || type === "staffs") {
             addBtn.classList.remove('hidden');
-            addBtn.className = 'btn-secondary-custom';
+            // ใช้คลาส Bootstrap ตามที่เตรียมไว้ใน HTML
+            addBtn.className = 'btn btn-outline-success py-2 fw-bold rounded-3 d-flex justify-content-center align-items-center gap-2'; 
         } else {
             addBtn.classList.add('hidden');
         }
@@ -378,9 +379,12 @@ async function loadUserStationStatus(userId) {
     const container = document.getElementById('stationStatusContainer');
     if (!container) return;
 
+    // ใช้ Bootstrap Spinner ให้หน้าตาเหมือนอันหลัก
     container.innerHTML = `
-        <div style="grid-column:span 3; text-align:center; padding:12px 0;">
-            <div style="width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto;"></div>
+        <div style="grid-column:span 3; text-align:center; padding:20px 0;">
+            <div class="spinner-border text-success spinner-border-sm" role="status" style="width: 1.5rem; height: 1.5rem; border-width: 2px;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
         </div>`;
 
     try {
@@ -397,7 +401,7 @@ async function loadUserStationStatus(userId) {
         container.innerHTML = "";
         
         if (stations.length === 0) {
-            container.innerHTML = `<p style="grid-column:span 3; color:var(--ink-faint); font-size:13px; text-align:center; padding:16px 0;">ยังไม่มีข้อมูลฐานกิจกรรมในระบบ</p>`;
+            container.innerHTML = `<p class="text-secondary small text-center w-100 py-3" style="grid-column:span 3;">ยังไม่มีข้อมูลฐานกิจกรรมในระบบ</p>`;
             return;
         }
 
@@ -407,13 +411,14 @@ async function loadUserStationStatus(userId) {
             const isCompleted = completedStations.has(st.stationId);
             const div = document.createElement('div');
             
+            // คลาส station-item, station-completed, station-pending ถูกเรียกใช้จาก HTML CSS อย่างถูกต้อง
             if (isCompleted) {
-                div.className = "station-item station-completed";
+                div.className = "station-item station-completed shadow-sm";
                 div.innerHTML = `
                     <span class="icon"><i class="bi bi-check-circle-fill"></i></span>
                     <span>${st.stationName}</span>`;
             } else {
-                div.className = "station-item station-pending";
+                div.className = "station-item station-pending shadow-sm";
                 div.innerHTML = `
                     <span class="icon"><i class="bi bi-lock"></i></span>
                     <span>${st.stationName}</span>`;
@@ -424,7 +429,7 @@ async function loadUserStationStatus(userId) {
 
     } catch (error) {
         console.error("Error loading station status:", error);
-        container.innerHTML = `<p style="grid-column:span 3; color:var(--danger); font-size:13px; text-align:center;">เกิดข้อผิดพลาดในการโหลดข้อมูลฐาน</p>`;
+        container.innerHTML = `<p class="text-danger small text-center w-100 py-3" style="grid-column:span 3;">เกิดข้อผิดพลาดในการโหลดข้อมูลฐาน</p>`;
     }
 }
 
