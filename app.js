@@ -63,12 +63,13 @@ async function checkUserInFirebase() {
         const userData = userSnap.data();
         currentRole = userData.role || "user";
         
-        // กำหนดค่าลงใน Dashboard
         document.getElementById('userNameDisplay').innerText = `สวัสดีคุณ ${userData.name}`;
         document.getElementById('userPointsDisplay').innerText = userData.points;
         generateQRCode(userData.nationalId);
 
-        // ถ้าเป็น Admin ให้โชว์เมนู Admin เพิ่มขึ้นมา
+        // --- เพิ่มบรรทัดนี้ลงไป ---
+        loadUserStationStatus(currentUserProfile.userId);
+
         if (currentRole === "admin") {
             document.getElementById('adminMenuBox').classList.remove('hidden');
         } else {
@@ -289,6 +290,62 @@ function renderTable(title, headers, snapshot, type) {
 
     document.getElementById('closeDataBtn').onclick = () => showSection('dashboard');
     showSection('dataList');
+}
+
+// ==========================================
+// ฟังก์ชันโหลดสถานะฐานกิจกรรม (แถวละ 3 ฐาน)
+// ==========================================
+async function loadUserStationStatus(userId) {
+    const container = document.getElementById('stationStatusContainer');
+    container.innerHTML = "<p style='grid-column: span 3; color: gray;'>กำลังตรวจสอบข้อมูลฐาน...</p>";
+
+    try {
+        // 1. ดึงข้อมูลฐานกิจกรรมทั้งหมด
+        const stationSnap = await getDocs(collection(db, "stations"));
+        const stations = [];
+        stationSnap.forEach(doc => stations.push(doc.data()));
+
+        // 2. ดึงประวัติว่าผู้ใช้คนนี้ผ่านฐานไหนมาแล้วบ้าง
+        const qLogs = query(collection(db, "logs"), where("lineUid", "==", userId));
+        const logSnap = await getDocs(qLogs);
+        
+        // ใช้ Set เก็บเฉพาะรหัสฐานที่ผ่านแล้ว (ไม่ให้ซ้ำกัน)
+        const completedStations = new Set();
+        logSnap.forEach(doc => completedStations.add(doc.data().stationId));
+
+        // 3. เริ่มสร้าง UI
+        container.innerHTML = "";
+        
+        if (stations.length === 0) {
+            container.innerHTML = "<p style='grid-column: span 3; color: gray;'>ยังไม่มีข้อมูลฐานกิจกรรมในระบบ</p>";
+            return;
+        }
+
+        // เรียงลำดับฐานตามรหัสฐาน (เช่น ST01, ST02)
+        stations.sort((a, b) => a.stationId.localeCompare(b.stationId));
+
+        // 4. วนลูปสร้างกล่องตามจำนวนฐาน
+        stations.forEach(st => {
+            const isCompleted = completedStations.has(st.stationId);
+            const div = document.createElement('div');
+            
+            if (isCompleted) {
+                // ผ่านแล้ว (สีเขียว + ติ๊กถูก)
+                div.className = "station-item station-completed";
+                div.innerHTML = `<span style="font-size: 20px;">✅</span><span>${st.stationName}</span>`;
+            } else {
+                // ยังไม่ผ่าน (สีเทา)
+                div.className = "station-item station-pending";
+                div.innerHTML = `<span style="font-size: 20px; filter: grayscale(100%); opacity: 0.5;">🔒</span><span>${st.stationName}</span>`;
+            }
+            
+            container.appendChild(div);
+        });
+
+    } catch (error) {
+        console.error("Error loading station status:", error);
+        container.innerHTML = "<p style='grid-column: span 3; color: red;'>เกิดข้อผิดพลาดในการโหลดข้อมูลฐาน</p>";
+    }
 }
 
 // เริ่มการทำงานของระบบ
