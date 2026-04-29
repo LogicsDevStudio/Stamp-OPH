@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบกิจกรรมสะสมแต้ม</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; text-align: center; margin: 0; padding: 20px; background-color: #f0f4f8; }
+        .hidden { display: none !important; }
+        .section { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-top: 15px; }
+        input, button { padding: 12px; margin: 8px 0; width: 100%; max-width: 300px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
+        button { background-color: #00B900; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #009900; }
+        .btn-cancel { background-color: #ff4d4d; }
+        .btn-cancel:hover { background-color: #cc0000; }
+        .admin-box { border: 2px dashed #ff9800; background-color: #fff8e1; margin-top: 20px; padding: 15px; border-radius: 8px; }
+        .admin-btn { background-color: #333; margin: 5px; width: 45%; display: inline-block; }
+        #qrCodeContainer { margin: 20px auto; display: flex; justify-content: center; padding: 10px; background: white; border-radius: 10px; width: fit-content; border: 1px solid #eee; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+    <h2>📍 ระบบสะสมแต้ม</h2>
+
+    <div id="loadingSection" class="section">
+        <p>⏳ กำลังโหลดข้อมูล...</p>
+    </div>
+
+    <div id="registerSection" class="section hidden">
+        <h3>ลงทะเบียนใช้งานครั้งแรก</h3>
+        <p>กรุณากรอกเลขบัตรประจำตัวประชาชน</p>
+        <input type="text" id="nationalIdInput" maxlength="13" placeholder="เลขบัตรประชาชน 13 หลัก">
+        <button id="btnCheckId">ตรวจสอบข้อมูล</button>
+    </div>
+
+    <div id="confirmSection" class="section hidden">
+        <h3>ตรวจสอบและยืนยันข้อมูล</h3>
+        <p style="text-align: left; background: #f9f9f9; padding: 10px; border-radius: 5px;">
+            **ชื่อ-สกุล:** <span id="confirmName" style="font-weight: bold;"></span><br>
+            **เลขบัตรฯ:** <span id="confirmId" style="font-weight: bold;"></span>
+        </p>
+        <button id="btnConfirmRegister">✅ ยืนยันข้อมูล</button>
+        <button id="btnCancelRegister" class="btn-cancel">❌ ยกเลิก</button>
+    </div>
+
+    <div id="dashboardSection" class="section hidden">
+        <h3 id="userNameDisplay"></h3>
+        <div style="background: #e8f5e9; padding: 20px; border-radius: 10px; display: inline-block; width: 80%; max-width: 250px;">
+            <h1 id="userPointsDisplay" style="color: #00B900; font-size: 50px; margin: 0;">0</h1>
+            <p style="margin: 5px 0 0 0; font-weight: bold;">แต้มสะสม</p>
+        </div>
+        
+        <p style="margin-top: 20px;">แสดง QR Code นี้ให้เจ้าหน้าที่สแกน</p>
+        <div id="qrCodeContainer"></div>
+        <button id="btnViewPersonalLogs">📝 ดูประวัติของฉัน</button>
+
+        <div id="adminMenuBox" class="admin-box hidden">
+            <h3 style="color: #d84315; margin-top: 0;">🛠️ เมนูผู้ดูแลระบบ</h3>
+            <button class="admin-btn" id="btnScanQR" style="width: 90%; background-color: #d84315;">📷 สแกนแจกแต้ม</button>
+            <button class="admin-btn" id="btnManageStations">จัดการฐาน</button>
+            <button class="admin-btn" id="btnManageStaffs">จัดการ จนท.</button>
+            <button class="admin-btn" id="btnAdminLogs" style="width: 90%;">ดูประวัติการแจกแต้มทั้งหมด</button>
+        </div>
+    </div>
+
+    <div id="scannerSection" class="section hidden">
+        <h3>📷 สแกน QR Code ผู้เข้าร่วม</h3>
+        <div id="reader" style="width: 100%; max-width: 350px; margin: auto;"></div>
+        <button id="closeScannerBtn" class="btn-cancel">ยกเลิกสแกน</button>
+    </div>
+
+    <div id="dataListSection" class="section hidden">
+        <h3 id="dataListTitle">ข้อมูล</h3>
+        <div style="overflow-x: auto;">
+            <table id="dataTable">
+                <thead id="dataHead"></thead>
+                <tbody id="dataBody"></tbody>
+            </table>
+        </div>
+        <button id="addDataBtn" class="hidden">➕ เพิ่มข้อมูล</button>
+        <button id="closeDataBtn" style="background-color: #888;">🔙 กลับหน้าหลัก</button>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
