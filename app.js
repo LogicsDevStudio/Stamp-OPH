@@ -339,19 +339,18 @@ function renderTable(title, headers, snapshot, type) {
             addBtn.classList.add('hidden');
         }
 
-        addBtn.onclick = async () => {
+        // --- แก้ไข: เปลี่ยนไปเปิด Modal แทนการใช้ prompt ---
+        addBtn.onclick = () => {
             if (type === "stations") {
-                const sid = prompt("กรอก 'รหัสฐาน' ที่ต้องการเพิ่ม:");
-                const sname = prompt("กรอก 'ชื่อฐานกิจกรรม':");
-                if (sid && sname) await setDoc(doc(db, "stations", sid), { stationId: sid, stationName: sname });
+                document.getElementById('inputStationId').value = "";
+                document.getElementById('inputStationName').value = "";
+                new bootstrap.Modal(document.getElementById('addStationModal')).show();
             } else if (type === "staffs") {
-                const stId = prompt("กรอก 'รหัสเจ้าหน้าที่':");
-                const stCode = prompt("กำหนด 'Staff Code':");
-                const stStation = prompt("ประจำฐานรหัสอะไร?:");
-                if (stId && stCode && stStation) await setDoc(doc(db, "staffs", stId), { staffId: stId, staffCode: stCode, stationId: stStation });
+                document.getElementById('inputStaffId').value = "";
+                document.getElementById('inputStaffCode').value = "";
+                document.getElementById('inputStaffStation').value = "";
+                new bootstrap.Modal(document.getElementById('addStaffModal')).show();
             }
-            alert("บันทึกสำเร็จ!");
-            showSection('dashboard');
         };
     }
 
@@ -379,7 +378,6 @@ async function loadUserStationStatus(userId) {
     const container = document.getElementById('stationStatusContainer');
     if (!container) return;
 
-    // ใช้ Bootstrap Spinner ให้หน้าตาเหมือนอันหลัก
     container.innerHTML = `
         <div style="grid-column:span 3; text-align:center; padding:20px 0;">
             <div class="spinner-border text-success spinner-border-sm" role="status" style="width: 1.5rem; height: 1.5rem; border-width: 2px;">
@@ -411,7 +409,6 @@ async function loadUserStationStatus(userId) {
             const isCompleted = completedStations.has(st.stationId);
             const div = document.createElement('div');
             
-            // คลาส station-item, station-completed, station-pending ถูกเรียกใช้จาก HTML CSS อย่างถูกต้อง
             if (isCompleted) {
                 div.className = "station-item station-completed shadow-sm";
                 div.innerHTML = `
@@ -432,6 +429,69 @@ async function loadUserStationStatus(userId) {
         container.innerHTML = `<p class="text-danger small text-center w-100 py-3" style="grid-column:span 3;">เกิดข้อผิดพลาดในการโหลดข้อมูลฐาน</p>`;
     }
 }
+
+// ==========================================
+// 9. ฟังก์ชันบันทึกข้อมูลจาก Modal (ใช้ SweetAlert2)
+// ==========================================
+
+// --- บันทึกฐานกิจกรรม ---
+document.getElementById('btnSaveStation')?.addEventListener('click', async () => {
+    const sid = document.getElementById('inputStationId').value.trim();
+    const sname = document.getElementById('inputStationName').value.trim();
+
+    if (!sid || !sname) {
+        return Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบ', text: 'กรุณากรอกรหัสฐานและชื่อฐานให้ครบถ้วน', confirmButtonColor: '#06c755' });
+    }
+
+    // ปิด Modal
+    bootstrap.Modal.getInstance(document.getElementById('addStationModal')).hide();
+
+    // แสดง Loading ของ SweetAlert2
+    Swal.fire({
+        title: 'กำลังบันทึกข้อมูล...',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+
+    try {
+        await setDoc(doc(db, "stations", sid), { stationId: sid, stationName: sname });
+        Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: 'เพิ่มฐานกิจกรรมเรียบร้อยแล้ว', confirmButtonColor: '#06c755' }).then(() => {
+            document.getElementById('btnManageStations').click(); // โหลดตารางใหม่
+        });
+    } catch(e) {
+        Swal.fire({ icon: 'error', title: 'ข้อผิดพลาด', text: 'ไม่สามารถบันทึกข้อมูลได้', confirmButtonColor: '#06c755' });
+    }
+});
+
+// --- บันทึกเจ้าหน้าที่ ---
+document.getElementById('btnSaveStaff')?.addEventListener('click', async () => {
+    const stId = document.getElementById('inputStaffId').value.trim();
+    const stCode = document.getElementById('inputStaffCode').value.trim();
+    const stStation = document.getElementById('inputStaffStation').value.trim();
+
+    if (!stId || !stCode || !stStation) {
+        return Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบ', text: 'กรุณากรอกข้อมูลเจ้าหน้าที่ให้ครบถ้วน', confirmButtonColor: '#06c755' });
+    }
+
+    // ปิด Modal
+    bootstrap.Modal.getInstance(document.getElementById('addStaffModal')).hide();
+
+    // แสดง Loading ของ SweetAlert2
+    Swal.fire({
+        title: 'กำลังบันทึกข้อมูล...',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+
+    try {
+        await setDoc(doc(db, "staffs", stId), { staffId: stId, staffCode: stCode, stationId: stStation });
+        Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: 'เพิ่มเจ้าหน้าที่เรียบร้อยแล้ว', confirmButtonColor: '#06c755' }).then(() => {
+            document.getElementById('btnManageStaffs').click(); // โหลดตารางใหม่
+        });
+    } catch(e) {
+        Swal.fire({ icon: 'error', title: 'ข้อผิดพลาด', text: 'ไม่สามารถบันทึกข้อมูลได้', confirmButtonColor: '#06c755' });
+    }
+});
 
 // เริ่มการทำงาน
 initLiff();
